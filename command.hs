@@ -1,6 +1,6 @@
 module Command
        (Exp,
-        Value)
+        eval)
        where
 
 import System.IO
@@ -28,16 +28,19 @@ eval :: Exp -> IO Value
 eval (File patt) = do
   files <- namesMatching patt
   return (Files files)
-eval (Com exp) = do
-  Files files <- (eval exp)
-  -- modified <- forM files (makeChange (seqCom :: Dna -> Dna))
-  dnaChange seqCom files
-  return (Files files)
+eval (Com exp) = changeDna seqCom exp
+eval (Rev exp) = changeDna seqRev exp
+eval (ComRev exp) = changeDna comRev exp
 
-dnaChange :: (Dna -> Dna) -> [String] -> IO [()]
-dnaChange f =
-  let foo = fileMap (toStr . f . fromStr) in
-   mapM foo 
+
+
+  
+
+changeDna :: (Dna -> Dna) -> Exp -> IO Value
+changeDna f exp = do
+  Files files <- (eval exp)
+  mapM (fileMap (toStr . f . fromStr)) files
+  return (Files files)
 
 
 
