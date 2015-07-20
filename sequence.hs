@@ -1,7 +1,7 @@
 module Sequence
        (
          Dna,
-         Sequence
+         Sequence(..)
        )where
 
 import Data.Char
@@ -23,16 +23,9 @@ class Sequence a where
   -- fromFile file = do
   --   inh <- openFile file ReadMode
     
-  revAndCom :: a -> a
-  revAndCom = seqCom . seqRev
+  comRev :: a -> a
+  comRev = seqCom . seqRev
 
-  makeChange :: (Sequence a) => (a -> a) -> String -> IO String --make change from a file and return the filename
-  makeChange f file = do
-    input <- readFile file
-    seq <- return $ f . fromStr $ input
-    writeFile ("m" ++ file) (toStr seq)
-    return file
-    
 newtype Dna = Dna String
             deriving(Show,Eq,Read)
 
@@ -53,3 +46,11 @@ instance Sequence Dna where
       comp _ = error "Invalid DNA sequence"
       
   seqRev (Dna s) = Dna $ reverse s
+
+
+-- -- revFile :: String -> IO String
+-- -- comFile :: String -> IO String
+-- -- comRevFile :: String -> IO String
+-- revFile = makeChange seqRev
+-- comFile = makeChange seqCom
+-- comRevFile = makeChange comRev

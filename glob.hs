@@ -1,3 +1,7 @@
+module Glob
+       (namesMatching)
+       where
+
 import System.FilePath (dropTrailingPathSeparator, splitFileName, (</>))
 
 import Control.Exception (handle)
@@ -53,9 +57,3 @@ listPlain dirName baseName = do
             then doesDirectoryExist dirName
             else doesNameExist (dirName </> baseName)
   return (if exists then [baseName] else [])
-
-main = do
-  patt <- getLine
-  putStrLn patt
-  names <- namesMatching patt
-  forM names putStrLn
