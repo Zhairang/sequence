@@ -14,7 +14,7 @@ import Glob
 import Control.DeepSeq
 import Control.Exception
 
-import Data.List(union,groupBy,sortBy,foldl1')
+import Data.List
 
 import Text.Regex.Posix((=~))
 
@@ -26,9 +26,11 @@ data Exp =
   |RevCom Exp
   |Union Exp Exp --union of the file
   |GrpBy String Exp
+  |Grp Exp
   |Tag Exp
   |Add Exp Exp --add files to groups
   |Out Exp
+  |Out1 String Exp
   deriving(Read,Show)
 
 data Value = Files [String]
@@ -50,6 +52,9 @@ eval (Union exp1 exp2) = do
 eval (GrpBy s exp) = do
   Files files <- (eval exp)
   return (Grps (grpBy ((=~ s)::(String -> String)) files))
+eval (Grp exp) = do
+  Files f <- eval exp
+  return (Grps [f])
 eval (Tag exp) = do
   Files files <- (eval exp)
   tag files
@@ -61,11 +66,19 @@ eval (Add exp1 exp2) = do
 eval (Out exp) =
   do
     Grps groups <- (eval exp)
-    mapM outputGroup groups
-    return (Grps groups)
+    files <- mapM outputGroup groups
+    return (Files files)
+    --return (Grps groups)
   
-
-
+eval (Out1 name exp) =
+   do
+     Grps groups <- eval exp
+     allCont <- (mapM getAllContents groups)
+     let output = foldl1' (++) (intersperse divider allCont)
+     writeFile name output
+     return (Files [name])
+   where divider = '\n' : (replicate 50 '*') ++ "\n"
+         
 changeDna :: (Dna -> Dna) -> Exp -> IO Value
 changeDna f exp = do
   Files files <- (eval exp)
@@ -102,6 +115,7 @@ getAllContents :: [String] -> IO String
 getAllContents files = do
   tag files
   contents <- mapM readFile files
+  evaluate (force contents)
   return (foldl1' merge contents)
     where merge x y =
             x ++ "\n" ++ y
@@ -114,4 +128,6 @@ getGroupName files =
    
 outputGroup files = do
   contents <- getAllContents files
-  writeFile (getGroupName files) contents
+  let name = getGroupName files
+  writeFile name contents
+  return name
