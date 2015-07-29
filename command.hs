@@ -1,6 +1,7 @@
 module Command
-       (Exp,
-        eval)
+       (Exp(..),
+        eval,
+        Value(..))
        where
 
 import System.IO
@@ -69,7 +70,7 @@ eval (Out exp) =
     files <- mapM outputGroup groups
     return (Files files)
     --return (Grps groups)
-  
+
 eval (Out1 name exp) =
    do
      Grps groups <- eval exp
@@ -78,7 +79,7 @@ eval (Out1 name exp) =
      writeFile name output
      return (Files [name])
    where divider = '\n' : (replicate 50 '*') ++ "\n"
-         
+
 changeDna :: (Dna -> Dna) -> Exp -> IO Value
 changeDna f exp = do
   Files files <- (eval exp)
@@ -125,7 +126,7 @@ getGroupName files =
   let (_,ftype) = break (== '.') (head files)
       names = map (fst . break (=='.')) files in
    foldr (++) ftype names
-   
+
 outputGroup files = do
   contents <- getAllContents files
   let name = getGroupName files
