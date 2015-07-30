@@ -4,16 +4,11 @@ module Command
         Value(..))
        where
 
-import System.IO
-
-import Control.Monad
-
 import Sequence
 
 import Glob
 
-import Control.DeepSeq
-import Control.Exception
+import Content
 
 import Data.List
 
@@ -24,7 +19,7 @@ data Exp =
   |Com Exp --complement of sequence
   |Rev Exp --reverse of sequence
   |ComRev Exp
-  |RevCom Exp
+--  |RevCom Exp
   |Union Exp Exp --union of the file
   |GrpBy String Exp
   |Grp Exp
@@ -32,6 +27,10 @@ data Exp =
   |Add Exp Exp --add files to groups
   |Out Exp
   |Out1 String Exp
+  |Com' Exp
+  |Rev' Exp
+  |ComRev' Exp
+  |Id Exp
   deriving(Read,Show)
 
 data Value = Files [String]
@@ -45,90 +44,58 @@ eval (File patt) = do
 eval (Com exp) = changeDna seqCom exp
 eval (Rev exp) = changeDna seqRev exp
 eval (ComRev exp) = changeDna comRev exp
-eval (RevCom exp) = eval (ComRev exp)
+--eval (RevCom exp) = eval (ComRev exp)
 eval (Union exp1 exp2) = do
-  Files f1 <- (eval exp1)
-  Files f2 <- (eval exp2)
+  Files f1 <- eval exp1
+  Files f2 <- eval exp2
   return (Files (f1 `union` f2))
 eval (GrpBy s exp) = do
-  Files files <- (eval exp)
+  Files files <- eval exp
   return (Grps (grpBy ((=~ s)::(String -> String)) files))
 eval (Grp exp) = do
   Files f <- eval exp
   return (Grps [f])
 eval (Tag exp) = do
-  Files files <- (eval exp)
+  Files files <- eval exp
   tag files
   return (Files files)
 eval (Add exp1 exp2) = do
-  Files files <- (eval exp1)
-  Grps groups <- (eval exp2)
+  Files files <- eval exp1
+  Grps groups <- eval exp2
   return (Grps (map (files++) groups))
 eval (Out exp) =
   do
-    Grps groups <- (eval exp)
+    Grps groups <- eval exp
     files <- mapM outputGroup groups
     return (Files files)
     --return (Grps groups)
-
 eval (Out1 name exp) =
    do
      Grps groups <- eval exp
-     allCont <- (mapM getAllContents groups)
+     allCont <- mapM getAllContents groups
      let output = foldl1' (++) (intersperse divider allCont)
      writeFile name output
      return (Files [name])
-   where divider = '\n' : (replicate 50 '*') ++ "\n"
+   where divider = '\n' : replicate 50 '*' ++ "\n"
+eval (Com' exp) = changeDna' seqCom exp
+eval (Rev' exp) = changeDna' seqRev exp
+eval (ComRev' exp) = changeDna' comRev exp
+eval (Id exp) = changeDna' id exp
 
 changeDna :: (Dna -> Dna) -> Exp -> IO Value
 changeDna f exp = do
-  Files files <- (eval exp)
-  mapM (fileMap (toStr . f . fromStr)) files
+  Files files <- eval exp
+  mapM_ (fileMap (toStr . f . fromStr)) files
   return (Files files)
 
-
-
-
-fileMap :: (String -> String) -> String -> IO () --map a string transforming function to a file
-fileMap f file = do
-  input <- readFile file
-  evaluate (force input)
-  writeFile file (f input)
+changeDna' :: (Dna -> Dna) -> Exp -> IO Value
+changeDna' f exp = do
+  Files files <- eval exp
+  mapM_ (initialMap (toStr . f .fromStr)) files
+  return (Files files)
 
 grpBy :: (Ord a) => (b -> a) -> [b] -> [[b]]
 grpBy f lis =
   groupBy fSame (sortBy fComp lis)
   where fComp a b = compare (f a) (f b)
-        fSame a b = (f a) == (f b)
-
-tag :: [String] -> IO [()]
-tag files =
-  mapM addTag files
-  where addTag file = do
-          input <- readFile file
-          evaluate (force input)
-          if head(input) == '>'
-            then return ()
-            else
-            writeFile file (('>':file ++ "\n") ++ input)
-
-getAllContents :: [String] -> IO String
-getAllContents files = do
-  tag files
-  contents <- mapM readFile files
-  evaluate (force contents)
-  return (foldl1' merge contents)
-    where merge x y =
-            x ++ "\n" ++ y
-
-getGroupName :: [String] -> String
-getGroupName files =
-  let (_,ftype) = break (== '.') (head files)
-      names = map (fst . break (=='.')) files in
-   foldr (++) ftype names
-
-outputGroup files = do
-  contents <- getAllContents files
-  let name = getGroupName files
-  writeFile name contents
-  return name
+        fSame a b = f a == f b

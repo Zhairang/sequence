@@ -11,6 +11,8 @@ import GlobRegex (matchesGlob)
 import System.Directory (doesDirectoryExist, doesFileExist,
                          getCurrentDirectory, getDirectoryContents)
 
+
+
 isPattern :: String -> Bool
 isPattern = any (`elem` "[*?]")
 
