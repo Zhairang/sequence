@@ -11,6 +11,8 @@ import Control.Monad
 import System.Directory (doesFileExist)
 import System.FilePath (dropTrailingPathSeparator, splitFileName, (</>))
 import Text.Regex.Posix((=~))
+import FileState
+import qualified Data.Map.Strict as Map
 
 temp = "temporary"
 
@@ -76,6 +78,7 @@ readFile' file = do
 
 getFileName = snd . splitFileName
 
+
 getFilesNames = map getFileName
 
 getShortName name =
@@ -83,3 +86,14 @@ getShortName name =
     if s == ""
       then name
       else s
+
+getFileNameWithState :: Dictionary -> FilePath -> String
+getFileNameWithState dic file =
+  let fileState = getFileState dic file
+      fileName = getFileName file
+      shortName = fileName =~ "\\(.*\\)..." in
+  fileState ++ shortName ++ "\n\t\t" ++ fileName
+
+getFilesNamesWithStates :: Dictionary -> [FilePath] -> [String]
+getFilesNamesWithStates dic =
+  map (getFileNameWithState dic)

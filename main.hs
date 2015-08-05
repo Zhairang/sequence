@@ -11,11 +11,13 @@ import Control.Applicative ((<*>))
 
 import Pretty
 
-import Control.Monad (guard,when,zipWithM_,liftM)
+import Control.Monad (guard,when ,zipWithM_,liftM)
 
 import Clip
 
 import GuiContent
+
+import FileState
 
 data GUI = GUI {
   mainWin :: Window,
@@ -31,7 +33,10 @@ data GUI = GUI {
   addGroup :: Button,
   output :: Button,
   clipButton :: Button,
-  clip :: Clipwindow
+  clip :: Clipwindow,
+  fileState :: TextBuffer,
+  about :: Button,
+  aboutDialog :: AboutDialog
 }
 
 windowX = 800
@@ -84,15 +89,23 @@ loadFromFile file =
     clipButton <- getButton "clipbutton"
     clip <- clipLoad builder
     clipInitialize clip
+    --textbuffer to store file state
+    fileState <- textBufferNew Nothing
+    --about dialog
+    about <- getButton "about"
+    aboutDialog <- builderGetObject builder castToAboutDialog "aboutdialog"
     return (GUI main directory patt select buttons suffix number regExp group grpBuff addGrp
-      output clipButton clip)
+      output clipButton clip fileState about aboutDialog)
 
 
 addEvent gui = do
   onDestroy (mainWin gui) mainQuit
   onBufferChanged (filePattern gui) (pattChanged gui)
   onBufferChanged (suffix gui) (pattChanged gui)
-  zipWithM_ (addCheckEvent gui) (fileButtons gui) [Rev' , Com' , ComRev' , Id]
+
+  let funList = zipWith (addCheckEvent gui) (fileButtons gui) [Rev' , Com' , ComRev' , Id]
+  zipWithM_ ($) funList [revStr , comStr , revComStr , oriStr]
+
   checkButtonLink (fileButtons gui) -- at most one checkbutton get active
   onEntryActivate (groupNumber gui) (grpByNum gui)
   onEntryActivate (regularExpressin gui) (grpByReg gui)
@@ -100,14 +113,17 @@ addEvent gui = do
   onClicked (output gui) (writeGrp gui)
   --clip window start
   onClicked (clipButton gui) (clipEvent gui)
+  --about dialog
+  onClicked (about gui) (runAboutDialog gui)
 
 pattChanged gui = do
   files <- getSelectedFile gui
-  textBufferSetText (selectFile gui) (prettify files)
+  dic <- loadFileState (fileState gui)
+  textBufferSetText (selectFile gui) (prettify files dic)
   mapToFileButtons gui (`toggleButtonSetInconsistent` True)
 
-addCheckEvent :: GUI -> CheckButton -> (Exp -> Exp) -> IO ()
-addCheckEvent gui button foo = do
+addCheckEvent :: GUI -> CheckButton -> (Exp -> Exp) -> String -> IO ()
+addCheckEvent gui button foo stStr = do
   onToggled button $ do
     patt <- getFilePattern gui
     when (patt /= "") $
@@ -116,7 +132,12 @@ addCheckEvent gui button foo = do
         active <- toggleButtonGetActive button
         when active $
           do
-            _ <- eval (foo (File patt))
+            Files files <- eval (foo (File patt))
+            let buffer = fileState gui
+            dic <- loadFileState buffer
+            writeFileState (changeFilesStates stStr files dic) buffer
+            --refresh the selection file buffer
+            getBufferContent (filePattern gui) >>= textBufferSetText (filePattern gui)
             return ()
   return ()
 
@@ -152,13 +173,18 @@ writeGrp gui = do
   out' groups
 
 writeGroup gui groups = do
-  textBufferSetText (group gui) (prettify groups)
+  dic <- loadFileState (fileState gui)
+  textBufferSetText (group gui) (prettify groups dic)
   textBufferSetText (groupBuffer gui) (show groups)
 
 clipEvent gui = do
   Files files <- getSelectedFile gui
   clipStart (clip gui) files
 
+runAboutDialog gui = do
+  let dialog = aboutDialog gui
+  dialogRun dialog
+  widgetHide dialog
 
 
 currentDirectory gui =
