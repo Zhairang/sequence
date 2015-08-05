@@ -87,13 +87,13 @@ getShortName name =
       then name
       else s
 
-getFileNameWithState :: Dictionary -> FilePath -> String
-getFileNameWithState dic file =
+getFileNameWithState :: Dictionary -> String -> FilePath -> String
+getFileNameWithState dic mid file =
   let fileState = getFileState dic file
       fileName = getFileName file
       shortName = fileName =~ "\\(.*\\)..." in
-  fileState ++ shortName ++ "\n\t\t" ++ fileName
+  fileState ++ shortName ++ mid ++ fileName
 
-getFilesNamesWithStates :: Dictionary -> [FilePath] -> [String]
-getFilesNamesWithStates dic =
-  map (getFileNameWithState dic)
+getFilesNamesWithStates :: Dictionary -> String -> [FilePath] -> [String]
+getFilesNamesWithStates dic mid=
+  map (getFileNameWithState dic mid)

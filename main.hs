@@ -117,10 +117,8 @@ addEvent gui = do
   onClicked (about gui) (runAboutDialog gui)
 
 pattChanged gui = do
-  files <- getSelectedFile gui
-  dic <- loadFileState (fileState gui)
-  textBufferSetText (selectFile gui) (prettify files dic)
-  mapToFileButtons gui (`toggleButtonSetInconsistent` True)
+  selectBufferRefresh gui
+  mapToFileButtons gui (`toggleButtonSetActive` False)
 
 addCheckEvent :: GUI -> CheckButton -> (Exp -> Exp) -> String -> IO ()
 addCheckEvent gui button foo stStr = do
@@ -128,7 +126,7 @@ addCheckEvent gui button foo stStr = do
     patt <- getFilePattern gui
     when (patt /= "") $
       do
-        mapToFileButtons gui (`toggleButtonSetInconsistent` False)
+        --mapToFileButtons gui (`toggleButtonSetInconsistent` False)
         active <- toggleButtonGetActive button
         when active $
           do
@@ -137,7 +135,7 @@ addCheckEvent gui button foo stStr = do
             dic <- loadFileState buffer
             writeFileState (changeFilesStates stStr files dic) buffer
             --refresh the selection file buffer
-            getBufferContent (filePattern gui) >>= textBufferSetText (filePattern gui)
+            selectBufferRefresh gui
             return ()
   return ()
 
@@ -186,6 +184,10 @@ runAboutDialog gui = do
   dialogRun dialog
   widgetHide dialog
 
+selectBufferRefresh gui = do
+  files <- getSelectedFile gui
+  dic <- loadFileState (fileState gui)
+  textBufferSetText (selectFile gui) (prettify files dic)
 
 currentDirectory gui =
   do

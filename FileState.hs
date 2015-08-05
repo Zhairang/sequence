@@ -10,9 +10,9 @@ import Control.Monad.Trans.State
 
 import Data.Maybe (fromMaybe)
 
-oriStr ="   "
-comStr = "C "
-revStr = "R "
+oriStr ="__"
+comStr = "C_"
+revStr = "R_"
 revComStr = "RC"
 
 type Dictionary = Map.Map FilePath String

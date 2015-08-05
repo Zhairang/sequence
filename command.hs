@@ -95,7 +95,7 @@ groupByString patt (Files files) =
   Grps (grpBy ((=~ patt)::(String -> String)) files)
 
 addToGroup (Files files) (Grps groups) =
-  Grps (map (++ files) groups)
+  Grps (map (`union` files) groups)
 
 out' (Grps groups) =
   mapM_ outputGroup groups
