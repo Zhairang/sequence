@@ -25,7 +25,7 @@ escape c | c `elem` regexChars = '\\' : [c]
 
 charClass :: String -> String
 charClass (']':cs) = ']' : globToRegex' cs
-charClass (c:cs) = charClass cs
+charClass (_:cs) = charClass cs
 charClass [] = error "unterminated"
 
 matchesGlob :: String -> String-> Bool

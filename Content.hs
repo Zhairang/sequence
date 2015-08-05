@@ -10,6 +10,7 @@ import Control.Monad
 
 import System.Directory (doesFileExist)
 import System.FilePath (dropTrailingPathSeparator, splitFileName, (</>))
+import Text.Regex.Posix((=~))
 
 temp = "temporary"
 
@@ -48,23 +49,37 @@ initialMap f file = do
 
 getAllContents :: [String] -> IO String
 getAllContents files = do
-  tag files
-  contents <- mapM readFile' files
+  contents <- mapM readFileWithTag files
   return (intercalate "\n" contents)
 
 getGroupName :: [String] -> String
 getGroupName files =
-  let (_,ftype) = break (== '.') (head files)
-      names = map (takeWhile (not . (== '.'))) files in
-   foldr (++) ftype names
+  let fileName = map (snd . splitFileName) files
+      ftype = ".grp"
+      dir = fst $ splitFileName (head files) in
+        dir </> foldr ((++) . getShortName) ftype fileName
 
-outputGroup files = do
+outputGroup files= do
   contents <- getAllContents files
   let name = getGroupName files
   writeFile name contents
   return name
 
+readFileWithTag file = do
+  content <- readFile' file
+  return (('>' : (getShortName $ getFileName file )++ "\n") ++ content)
+
 readFile' file = do
   input <- readFile file
   evaluate (force input)
   return input
+
+getFileName = snd . splitFileName
+
+getFilesNames = map getFileName
+
+getShortName name =
+  let s = name =~ "\\(.*\\)..." in
+    if s == ""
+      then name
+      else s

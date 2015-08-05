@@ -1,7 +1,11 @@
 module Command
        (Exp(..),
         eval,
-        Value(..))
+        Value(..),
+        groupEvery,
+        groupByString,
+        addToGroup,
+        out')
        where
 
 import Sequence
@@ -35,7 +39,7 @@ data Exp =
 
 data Value = Files [String]
            |Grps [[String]]
-              deriving(Show)
+              deriving(Show,Read)
 
 eval :: Exp -> IO Value
 eval (File patt) = do
@@ -81,6 +85,25 @@ eval (Com' exp) = changeDna' seqCom exp
 eval (Rev' exp) = changeDna' seqRev exp
 eval (ComRev' exp) = changeDna' comRev exp
 eval (Id exp) = changeDna' id exp
+
+groupEvery :: Int -> Value -> Value
+groupEvery n (Files files) =
+  Grps (partition' n files)
+
+groupByString :: String -> Value -> Value
+groupByString patt (Files files) =
+  Grps (grpBy ((=~ patt)::(String -> String)) files)
+
+addToGroup (Files files) (Grps groups) =
+  Grps (map (++ files) groups)
+
+out' (Grps groups) =
+  mapM_ outputGroup groups
+
+partition' _ [] = []
+partition' n xs =
+  let (a , b) = splitAt n xs in
+    a : partition' n b
 
 changeDna :: (Dna -> Dna) -> Exp -> IO Value
 changeDna f exp = do
