@@ -19,6 +19,8 @@ import GuiContent
 
 import FileState
 
+import Groupbuffer
+
 data GUI = GUI {
   mainWin :: Window,
   directory :: FileChooserButton,
@@ -36,7 +38,9 @@ data GUI = GUI {
   clip :: Clipwindow,
   fileState :: TextBuffer,
   about :: Button,
-  aboutDialog :: AboutDialog
+  aboutDialog :: AboutDialog,
+  groupContentBuffer :: GroupBuffer,
+  outputToBuffer :: Button
 }
 
 windowX = 800
@@ -94,8 +98,11 @@ loadFromFile file =
     --about dialog
     about <- getButton "about"
     aboutDialog <- builderGetObject builder castToAboutDialog "aboutdialog"
+    --load group buffer
+    groupContentBuffer <- groupBufferLoad builder
+    outputToBuffer <- getButton "outputtobuffer"
     return (GUI main directory patt select buttons suffix number regExp group grpBuff addGrp
-      output clipButton clip fileState about aboutDialog)
+      output clipButton clip fileState about aboutDialog groupContentBuffer outputToBuffer)
 
 
 addEvent gui = do
@@ -115,7 +122,7 @@ addEvent gui = do
   onClicked (clipButton gui) (clipEvent gui)
   --about dialog
   onClicked (about gui) (runAboutDialog gui)
-
+  onClicked (outputToBuffer gui) (groupBufferStart gui)
 pattChanged gui = do
   selectBufferRefresh gui
   mapToFileButtons gui (`toggleButtonSetActive` False)
@@ -183,6 +190,12 @@ runAboutDialog gui = do
   let dialog = aboutDialog gui
   dialogRun dialog
   widgetHide dialog
+
+groupBufferStart :: GUI -> IO ()
+groupBufferStart gui = do
+  groups <- getGroup gui
+  contents <- (out1' groups)
+  runGroupBuffer (groupContentBuffer gui) contents
 
 selectBufferRefresh gui = do
   files <- getSelectedFile gui

@@ -16,7 +16,7 @@ class Sequence a where
   seqCom :: a -> a  --the complement of a sequence
 
   seqRev :: a -> a --the reverse sequence
-  
+
   fromStr :: String -> a
 
   -- fromFile :: String -> IO a
@@ -43,7 +43,7 @@ instance Sequence Dna where
       comp 'T' = 'A'
       comp 'G' = 'C'
       comp 'C' = 'G'
-      comp _ = error "Invalid DNA sequence"
+      comp x = x
 
   seqRev (Dna s) = Dna $ reverse s
 

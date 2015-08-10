@@ -5,7 +5,8 @@ module Command
         groupEvery,
         groupByString,
         addToGroup,
-        out')
+        out',
+        out1')
        where
 
 import Sequence
@@ -99,6 +100,14 @@ addToGroup (Files files) (Grps groups) =
 
 out' (Grps groups) =
   mapM_ outputGroup groups
+
+out1' :: Value -> IO String
+out1' (Grps groups) = do
+  contents <- mapM getAllContents groups
+  let names = map (getFileName . getGroupName) groups
+  let named = zipWith (++) (map (++ "\n") names) contents
+  return (intercalate ('\n':replicate 100 '-' ++ "\n") named)
+
 
 partition' _ [] = []
 partition' n xs =

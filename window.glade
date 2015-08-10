@@ -27,8 +27,8 @@
             <child>
               <object class="GtkFileChooserButton" id="directory">
                 <property name="visible">True</property>
-                <property name="show_hidden">True</property>
                 <property name="action">select-folder</property>
+                <property name="show_hidden">True</property>
                 <property name="width_chars">0</property>
               </object>
               <packing>
@@ -443,14 +443,15 @@
                     <child>
                       <object class="GtkAlignment" id="alignment6">
                         <property name="visible">True</property>
-                        <property name="top_padding">280</property>
+                        <property name="top_padding">260</property>
                         <child>
                           <object class="GtkVBox" id="vbox2">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
+                            <property name="spacing">5</property>
                             <child>
-                              <object class="GtkButton" id="output">
-                                <property name="label" translatable="yes">Output</property>
+                              <object class="GtkButton" id="outputtobuffer">
+                                <property name="label" translatable="yes">Output to buffer</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -462,6 +463,19 @@
                               </packing>
                             </child>
                             <child>
+                              <object class="GtkButton" id="output">
+                                <property name="label" translatable="yes">Output</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
                               <object class="GtkLabel" id="label11">
                                 <property name="visible">True</property>
                                 <property name="xpad">70</property>
@@ -469,7 +483,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">1</property>
+                                <property name="position">3</property>
                               </packing>
                             </child>
                             <child>
@@ -483,7 +497,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">2</property>
+                                <property name="position">3</property>
                               </packing>
                             </child>
                           </object>
@@ -554,7 +568,7 @@
             </child>
             <child>
               <object class="GtkButton" id="write">
-                <property name="label">gtk-paste</property>
+                <property name="label">gtk-copy</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -602,7 +616,7 @@
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
     <property name="program_name">Sequence</property>
-    <property name="version">Ver1.0.0</property>
+    <property name="version">Ver1.0.1</property>
     <property name="copyright" translatable="yes">    Copyright (C) &lt;2015&gt;  &lt;Yonghao Jin&gt;
 
     This program is free software: you can redistribute it and/or modify
@@ -1302,6 +1316,75 @@ University of Science and Technology of China
             <property name="expand">False</property>
             <property name="pack_type">end</property>
             <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="groupbuffer">
+    <child>
+      <object class="GtkVBox" id="vbox7">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">20</property>
+        <child>
+          <object class="GtkScrolledWindow" id="scrolledwindow4">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="hscrollbar_policy">automatic</property>
+            <property name="vscrollbar_policy">automatic</property>
+            <child>
+              <object class="GtkTextView" id="content">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkAlignment" id="alignment7">
+            <property name="visible">True</property>
+            <property name="left_padding">200</property>
+            <child>
+              <object class="GtkHBox" id="hbox7">
+                <property name="visible">True</property>
+                <property name="spacing">10</property>
+                <child>
+                  <object class="GtkCheckButton" id="charwrap">
+                    <property name="label" translatable="yes">Char Wrap</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="fill">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="exitbuffer">
+                    <property name="label">gtk-close</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="use_stock">True</property>
+                  </object>
+                  <packing>
+                    <property name="fill">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">1</property>
           </packing>
         </child>
       </object>
