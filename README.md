@@ -1,6 +1,6 @@
 # Sequence
 
-A windows GUI program that is intended to help sequencing validation in molecure cloning experiments.
+A windows GUI program that is intended to help sequencing validation in molecure cloning experiments. It allows you to use regular expression to select a group of sequencing files and easily process them for down-stream analysis.
 
 Executable could be found in the [release page](https://github.com/jyh1/sequence/releases/tag/v1.01).
 
